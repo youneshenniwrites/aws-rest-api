@@ -117,7 +117,11 @@ export class AwsRestApiStack extends Stack {
       "DELETE",
       new ApiLambdaIntegration(deleteBlogPostLambda)
     );
-    apiDocsPath.addMethod("GET", new ApiLambdaIntegration(apiDocsLambda));
+    apiDocsPath.addMethod("GET", new ApiLambdaIntegration(apiDocsLambda), {
+      requestParameters: {
+        "method.request.querystring.ui": false,
+      },
+    });
 
     //* Grant permission for lambdas to interact with dynamodb
     dynamoDbTable.grantWriteData(createBlogPostLambda);
