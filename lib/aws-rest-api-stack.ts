@@ -58,7 +58,11 @@ export class AwsRestApiStack extends Stack {
       "POST",
       new ApiLambdaIntegration(createBlogPostLambda)
     );
-    blogPostPath.addMethod("GET", new ApiLambdaIntegration(getBlogPostLambda));
+    blogPostPath.addMethod("GET", new ApiLambdaIntegration(getBlogPostLambda), {
+      requestParameters: {
+        "method.request.querystring.order": false,
+      },
+    });
 
     //* Grant permission for lambdas to communicate with dynamodb
     dynamoDbTable.grantWriteData(createBlogPostLambda);

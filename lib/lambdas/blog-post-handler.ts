@@ -2,6 +2,7 @@ import { APIGatewayEvent } from "aws-lambda";
 import { BlogPostPartialType, IBlogPost } from "../types/blog-post-types";
 import { v4 as uuid } from "uuid";
 import { blogPostService } from "../services/blog-post-service";
+import { sortBlogPosts } from "../utils";
 
 export async function createBlogPostHandler(event: APIGatewayEvent) {
   const partialBlogPost: BlogPostPartialType = JSON.parse(event.body!);
@@ -22,7 +23,10 @@ export async function createBlogPostHandler(event: APIGatewayEvent) {
 }
 
 export async function getBlogPostHandler(event: APIGatewayEvent) {
-  const blogPosts = await blogPostService.getAllBlogPosts();
+  const order = event?.queryStringParameters?.order;
+  let blogPosts = await blogPostService.getAllBlogPosts();
+
+  blogPosts = sortBlogPosts(blogPosts, order || "desc");
 
   return {
     statusCode: 200,
