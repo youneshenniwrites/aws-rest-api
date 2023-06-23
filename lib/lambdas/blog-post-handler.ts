@@ -7,10 +7,6 @@ import {
   getSwaggerUIHtml,
   sortBlogPosts,
 } from "../utils";
-import {
-  APIGatewayClient,
-  GetExportCommand,
-} from "@aws-sdk/client-api-gateway";
 import { apiDocsService } from "../services/api-docs-service";
 
 export async function createBlogPostHandler(event: APIGatewayEvent) {
