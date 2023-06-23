@@ -22,7 +22,7 @@ export async function createBlogPostHandler(event: APIGatewayEvent) {
   };
 }
 
-export async function getBlogPostHandler(event: APIGatewayEvent) {
+export async function getBlogPostsHandler(event: APIGatewayEvent) {
   const order = event?.queryStringParameters?.order;
   let blogPosts = await blogPostService.getAllBlogPosts();
 

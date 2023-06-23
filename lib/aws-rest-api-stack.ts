@@ -42,15 +42,19 @@ export class AwsRestApiStack extends Stack {
     );
 
     //* Lambda Function 2
-    const getBlogPostLambdaName = "getBlogPostHandler";
-    const getBlogPostLambda = new LambdaFunction(this, getBlogPostLambdaName, {
-      runtime: Runtime.NODEJS_18_X,
-      entry: join(__dirname, "lambdas", "blog-post-handler.ts"),
-      handler: getBlogPostLambdaName,
-      functionName: getBlogPostLambdaName,
-      //* Connect lambda to dynamo db
-      environment: { TABLE_NAME: dynamoDbTable.tableName },
-    });
+    const getBlogPostsLambdaName = "getBlogPostsHandler";
+    const getBlogPostsLambda = new LambdaFunction(
+      this,
+      getBlogPostsLambdaName,
+      {
+        runtime: Runtime.NODEJS_18_X,
+        entry: join(__dirname, "lambdas", "blog-post-handler.ts"),
+        handler: getBlogPostsLambdaName,
+        functionName: getBlogPostsLambdaName,
+        //* Connect lambda to dynamo db
+        environment: { TABLE_NAME: dynamoDbTable.tableName },
+      }
+    );
 
     //* Connect lambdas to API and add resources/methods
     const blogPostPath = api.root.addResource("blogposts");
@@ -58,14 +62,18 @@ export class AwsRestApiStack extends Stack {
       "POST",
       new ApiLambdaIntegration(createBlogPostLambda)
     );
-    blogPostPath.addMethod("GET", new ApiLambdaIntegration(getBlogPostLambda), {
-      requestParameters: {
-        "method.request.querystring.order": false,
-      },
-    });
+    blogPostPath.addMethod(
+      "GET",
+      new ApiLambdaIntegration(getBlogPostsLambda),
+      {
+        requestParameters: {
+          "method.request.querystring.order": false,
+        },
+      }
+    );
 
     //* Grant permission for lambdas to communicate with dynamodb
     dynamoDbTable.grantWriteData(createBlogPostLambda);
-    dynamoDbTable.grantReadData(getBlogPostLambda);
+    dynamoDbTable.grantReadData(getBlogPostsLambda);
   }
 }
