@@ -1,4 +1,5 @@
 import {
+  DeleteItemCommand,
   DynamoDBClient,
   GetItemCommand,
   PutItemCommand,
@@ -55,6 +56,16 @@ class BlogPostService {
       return null;
     }
     return parseDynamoDbFormat(item) as IBlogPost;
+  }
+
+  async deleteBlogPostById(id: string): Promise<void> {
+    const params = {
+      TableName: this.tableName,
+      Key: applyDynamoDbFormat({ id }),
+    };
+
+    const deleteCommand = new DeleteItemCommand(params);
+    await this.dynamoClient.send(deleteCommand);
   }
 }
 

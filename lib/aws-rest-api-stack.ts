@@ -65,6 +65,20 @@ export class AwsRestApiStack extends Stack {
       environment: { TABLE_NAME: dynamoDbTable.tableName },
     });
 
+    //* Lambda Function 4
+    const deleteBlogPostLambdaName = "deleteBlogPostHandler";
+    const deleteBlogPostLambda = new LambdaFunction(
+      this,
+      deleteBlogPostLambdaName,
+      {
+        runtime: Runtime.NODEJS_18_X,
+        entry: join(__dirname, "lambdas", "blog-post-handler.ts"),
+        handler: deleteBlogPostLambdaName,
+        functionName: deleteBlogPostLambdaName,
+        environment: { TABLE_NAME: dynamoDbTable.tableName },
+      }
+    );
+
     //* Define API Paths
     const blogPostPath = api.root.addResource("blogposts");
     const blogPostByIdPath = blogPostPath.addResource("{id}"); // blogposts/{id}
@@ -87,10 +101,15 @@ export class AwsRestApiStack extends Stack {
       "GET",
       new ApiLambdaIntegration(getBlogPostLambda)
     );
+    blogPostByIdPath.addMethod(
+      "DELETE",
+      new ApiLambdaIntegration(deleteBlogPostLambda)
+    );
 
-    //* Grant permission for lambdas to communicate with dynamodb
+    //* Grant permission for lambdas to interact with dynamodb
     dynamoDbTable.grantWriteData(createBlogPostLambda);
     dynamoDbTable.grantReadData(getBlogPostsLambda);
     dynamoDbTable.grantReadData(getBlogPostLambda);
+    dynamoDbTable.grantWriteData(deleteBlogPostLambda);
   }
 }

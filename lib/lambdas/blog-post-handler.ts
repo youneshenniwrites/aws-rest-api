@@ -43,3 +43,12 @@ export async function getBlogPostHandler(event: APIGatewayEvent) {
     body: JSON.stringify(blogPost),
   };
 }
+
+export async function deleteBlogPostHandler(event: APIGatewayEvent) {
+  const id = event.pathParameters!.id!;
+  await blogPostService.deleteBlogPostById(id);
+
+  return {
+    statusCode: 204,
+  };
+}
