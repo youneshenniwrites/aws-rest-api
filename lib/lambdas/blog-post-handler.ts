@@ -33,3 +33,13 @@ export async function getBlogPostsHandler(event: APIGatewayEvent) {
     body: JSON.stringify(blogPosts),
   };
 }
+
+export async function getBlogPostHandler(event: APIGatewayEvent) {
+  const id = event.pathParameters!.id!;
+  const blogPost = await blogPostService.getBlogPostById(id);
+
+  return {
+    statusCode: 200,
+    body: JSON.stringify(blogPost),
+  };
+}

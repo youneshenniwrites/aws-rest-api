@@ -51,13 +51,25 @@ export class AwsRestApiStack extends Stack {
         entry: join(__dirname, "lambdas", "blog-post-handler.ts"),
         handler: getBlogPostsLambdaName,
         functionName: getBlogPostsLambdaName,
-        //* Connect lambda to dynamo db
         environment: { TABLE_NAME: dynamoDbTable.tableName },
       }
     );
 
-    //* Connect lambdas to API and add resources/methods
+    //* Lambda Function 3
+    const getBlogPostLambdaName = "getBlogPostHandler";
+    const getBlogPostLambda = new LambdaFunction(this, getBlogPostLambdaName, {
+      runtime: Runtime.NODEJS_18_X,
+      entry: join(__dirname, "lambdas", "blog-post-handler.ts"),
+      handler: getBlogPostLambdaName,
+      functionName: getBlogPostLambdaName,
+      environment: { TABLE_NAME: dynamoDbTable.tableName },
+    });
+
+    //* Define API Paths
     const blogPostPath = api.root.addResource("blogposts");
+    const blogPostByIdPath = blogPostPath.addResource("{id}"); // blogposts/{id}
+
+    //* Connect lambdas to API methods
     blogPostPath.addMethod(
       "POST",
       new ApiLambdaIntegration(createBlogPostLambda)
@@ -71,9 +83,14 @@ export class AwsRestApiStack extends Stack {
         },
       }
     );
+    blogPostByIdPath.addMethod(
+      "GET",
+      new ApiLambdaIntegration(getBlogPostLambda)
+    );
 
     //* Grant permission for lambdas to communicate with dynamodb
     dynamoDbTable.grantWriteData(createBlogPostLambda);
     dynamoDbTable.grantReadData(getBlogPostsLambda);
+    dynamoDbTable.grantReadData(getBlogPostLambda);
   }
 }
