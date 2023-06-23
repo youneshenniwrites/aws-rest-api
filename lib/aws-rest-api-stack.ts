@@ -36,6 +36,7 @@ export class AwsRestApiStack extends Stack {
         entry: join(__dirname, "lambdas", "blog-post-handler.ts"),
         handler: createBLogPostLambdaName,
         functionName: createBLogPostLambdaName,
+        //* Connect lambda to dynamo db
         environment: { TABLE_NAME: dynamoDbTable.tableName },
       }
     );
