@@ -8,7 +8,7 @@ class BlogPostService {
 
   constructor(tableName: string) {
     this.tableName = tableName;
-    this.dynamo = this.dynamo;
+    this.dynamo = new DynamoDBClient({});
   }
 
   async saveBlogPost(blogPost: IBlogPost): Promise<void> {
