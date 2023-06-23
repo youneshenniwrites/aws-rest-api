@@ -5,3 +5,5 @@ export interface IBlogPost {
   content: string;
   createdAt: string;
 }
+
+export type BlogPostPartialType = Omit<IBlogPost, "id" | "createdAt">;

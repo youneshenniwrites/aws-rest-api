@@ -1,18 +1,18 @@
 import { APIGatewayEvent } from "aws-lambda";
-import { BlogPost } from "./BlogPost";
+import { BlogPostPartialType, IBlogPost } from "../types/blog-post-types";
 import { v4 as uuid } from "uuid";
-
-type BlogPostPartial = Omit<BlogPost, "id" | "createdAt">;
-
-const tableName = process.env.TABLE_NAME!;
+import { blogPostService } from "../services/blog-post-service";
 
 export async function createBLogPostHandler(event: APIGatewayEvent) {
-  const partialBlogPost: BlogPostPartial = JSON.parse(event.body!);
+  const partialBlogPost: BlogPostPartialType = JSON.parse(event.body!);
 
   //* Add missing fields
   const id = uuid();
   const createdAt = new Date().toISOString();
-  const blogPost: BlogPost = { id, ...partialBlogPost, createdAt };
+  const blogPost: IBlogPost = { id, ...partialBlogPost, createdAt };
+
+  //* Save blog post to db
+  await blogPostService.saveBlogPost(blogPost);
 
   return {
     statusCode: 201,
