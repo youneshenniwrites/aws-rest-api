@@ -9,3 +9,8 @@ export function sortBlogPosts(
     return order === "asc" ? comparison : -comparison;
   });
 }
+
+export function convertResponseToUTF8(response: Uint8Array): string {
+  const buffer = Buffer.from(response);
+  return buffer.toString("utf-8");
+}

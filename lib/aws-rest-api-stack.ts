@@ -7,6 +7,7 @@ import {
   AttributeType,
   Table as DynamoDbTable,
 } from "aws-cdk-lib/aws-dynamodb";
+import { PolicyStatement } from "aws-cdk-lib/aws-iam";
 import { Runtime } from "aws-cdk-lib/aws-lambda";
 import { NodejsFunction as LambdaFunction } from "aws-cdk-lib/aws-lambda-nodejs";
 import { Construct } from "constructs";
@@ -17,7 +18,7 @@ export class AwsRestApiStack extends Stack {
     super(scope, id, props);
 
     //* API Gateway
-    const api = new RestApi(this, "blogPostApi");
+    const restApi = new RestApi(this, "blogPostApi");
 
     //* Database
     const dynamoDbTable = new DynamoDbTable(this, "blogPostTable", {
@@ -79,9 +80,20 @@ export class AwsRestApiStack extends Stack {
       }
     );
 
+    //* Lambda Function 5
+    const apiDocsLambdaName = "apiDocsHandler";
+    const apiDocsLambda = new LambdaFunction(this, apiDocsLambdaName, {
+      runtime: Runtime.NODEJS_18_X,
+      entry: join(__dirname, "lambdas", "blog-post-handler.ts"),
+      handler: apiDocsLambdaName,
+      functionName: apiDocsLambdaName,
+      environment: { API_ID: restApi.restApiId },
+    });
+
     //* Define API Paths
-    const blogPostPath = api.root.addResource("blogposts");
+    const blogPostPath = restApi.root.addResource("blogposts");
     const blogPostByIdPath = blogPostPath.addResource("{id}"); // blogposts/{id}
+    const apiDocsPath = restApi.root.addResource("api-docs");
 
     //* Connect lambdas to API methods
     blogPostPath.addMethod(
@@ -105,11 +117,19 @@ export class AwsRestApiStack extends Stack {
       "DELETE",
       new ApiLambdaIntegration(deleteBlogPostLambda)
     );
+    apiDocsPath.addMethod("GET", new ApiLambdaIntegration(apiDocsLambda));
 
     //* Grant permission for lambdas to interact with dynamodb
     dynamoDbTable.grantWriteData(createBlogPostLambda);
     dynamoDbTable.grantReadData(getBlogPostsLambda);
     dynamoDbTable.grantReadData(getBlogPostLambda);
     dynamoDbTable.grantWriteData(deleteBlogPostLambda);
+
+    //* Grant permission for lambda to interact with swagger
+    const policy = new PolicyStatement({
+      actions: ["apigateway:GET"],
+      resources: ["*"],
+    });
+    apiDocsLambda.role?.addToPrincipalPolicy(policy);
   }
 }
