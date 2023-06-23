@@ -1,5 +1,9 @@
-import { DynamoDBClient, PutItemCommand } from "@aws-sdk/client-dynamodb";
-import { marshall } from "@aws-sdk/util-dynamodb";
+import {
+  DynamoDBClient,
+  PutItemCommand,
+  ScanCommand,
+} from "@aws-sdk/client-dynamodb";
+import { marshall, unmarshall } from "@aws-sdk/util-dynamodb";
 import { IBlogPost } from "../types/blog-post-types";
 
 class BlogPostService {
@@ -14,12 +18,24 @@ class BlogPostService {
   async saveBlogPost(blogPost: IBlogPost): Promise<void> {
     const params = {
       TableName: this.tableName,
-      //* convert to dynamodb format
+      //* Convert to dynamodb format
       Item: marshall(blogPost),
     };
 
     const command = new PutItemCommand(params);
     await this.dynamo.send(command);
+  }
+
+  async getAllBlogPosts(): Promise<IBlogPost[]> {
+    const params = {
+      TableName: this.tableName,
+    };
+
+    const command = new ScanCommand(params);
+    const response = await this.dynamo.send(command);
+    const items = response.Items ?? [];
+
+    return items.map((item) => unmarshall(item) as IBlogPost);
   }
 }
 
